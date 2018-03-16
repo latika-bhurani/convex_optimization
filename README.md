@@ -1,1 +1,1 @@
-# convex_ptimization
+# convex_optimization
