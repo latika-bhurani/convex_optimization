@@ -177,12 +177,64 @@ namespace crf_loss{
 	PetscErrorCode LossGrad(Tao tao, Vec w, double *f, Vec G, void *ctx) {
 		AppCtx *user = (AppCtx *)ctx;
 		PetscErrorCode ierr;
-		
+		PetscReal reg = 0.0;
+		PetscReal weight_mod = 0.0;
+		PetsReal edge_norm_square = 0.0;
 		PetscFunctionBegin;
-		
+		Vec temp;
+
 		/* 
 			Your Implementation here 
 		*/
+
+		user->objgrad_timer.start();
+
+		user->matvec_timer.start();
+		
+		// extract edge and node weights
+		ierr = MatMult(user->M1, w, user->w_node); CHKERRQ(ierr);
+		ierr = MatMult(user->M2, w, user->w_edge); CHKERRQ(ierr);
+
+		// get fx
+		ierr = MatMult(user->data, user->w_node, user->fx); CHKERRQ(ierr);
+		user->matvec_timer.stop();
+
+		// scatter w_edge
+		ierr = VecScatterCreateToAll(user->w_edge, &scatter, &user->w_edgeloc); CHKERRQ(ierr);
+		ierr = VecScatterBegin(scatter, user->w_edge, user->w_edgeloc, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
+		ierr = VecScatterEnd(scatter, user->w_edge, user->w_edgeloc, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
+
+		// Computes the function and gradient coefficients 
+		ierr = loss_coef(user->fx, user->labels, user->w_edgeloc, user->c_node, user->g_edgeloc, f, user, &user->seq);	CHKERRQ(ierr);
+
+		// Sum up the contribution of loss from all processes
+		MPI_Allreduce(MPI_IN_PLACE, f, 1, MPI_DOUBLE, MPI_SUM, PETSC_COMM_WORLD);
+
+		// Compute the regularization
+		ierr = VecDot(user->w_node, user->w_node, &reg_node); CHKERRQ(ierr);
+		ierr = VecDot(user->w_edge, user->w_edge, &reg_edge); CHKERRQ(ierr);
+
+		reg = reg_node + reg_edge;
+		*f = *f + reg * user->lambda / 2.0;
+		
+		ierr = VecScatterBegin(scatter, user->w_edgeloc, user->w_edge, ADD_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
+		ierr = VecScatterEnd(scatter, user->w_edgeloc, user->w_edge, ADD_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
+
+		// Now everyone can compute the gradient
+
+		user->matvec_timer.start();
+		ierr = MatMultTranspose(user->data, user->c_node, &user->g_node); CHKERRQ(ierr);
+		user->matvec_timer.stop();
+
+		user->matvec_timer.start();
+		ierr = MatMultTranspose(user->M1, user->g_node, &temp); CHKERRQ(ierr);
+		ierr = MatMultTransposeAdd(user->M2, user->g_edge, temp, G); CHKERRQ(ierr);
+		user->matvec_timer.stop();
+
+		//ierr = VecAXPY(G, user->lambda, w)
+		ierr = VecAXPY(user->g_node, user->lambda, user->w_node); CHKERRQ(ierr);
+		ierr = VecAXPY(user->g_edge, user->lambda, user->w_edge); CHKERRQ(ierr);
+		user->objgrad_timer.stop();
 		
 		PetscFunctionReturn(0);
 	}
@@ -287,6 +339,38 @@ namespace crf_loss{
 			Your Implementation here 
 		*/
 		
+
+		ierr = MatMult(user->M1, w, user->w_node); CHKERRQ(ierr);
+		ierr = MatMult(user->M2, w, user->w_edge); CHKERRQ(ierr);
+		// Compute the model output discriminative values on training data
+		ierr = MatMult(user->data, user->w_node, user->fx); CHKERRQ(ierr);
+
+		// Get the error of word and letter for the local sub-dataset of training data
+		ierr = get_errors(user->fx, user->labels, user->w_edge, &user->seq, user, &lError, &wError); CHKERRQ(ierr);
+		
+		// Sum up the errors (both word wise and letter wise)
+		MPI_Allreduce(MPI_IN_PLACE, &lError, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD);
+		MPI_Allreduce(MPI_IN_PLACE, &wError, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD);
+
+		if (user->rank == 0)
+			PetscPrintf(PETSC_COMM_SELF, "%f %f ",
+				lError*100.0 / user->m, wError*100.0 / user->seq.wGlobalCount);
+
+		// Repeat the above for test data
+		// Compute the model output discriminative values on test data
+		ierr = MatMult(user->tdata, user->w_node, user->tfx); CHKERRQ(ierr);
+
+		// Get the error of word and letter for the local sub-dataset of test data
+		ierr = get_errors(user->tfx, user->tlabels, user->w_edge, &user->tseq, user, &lError, &wError); CHKERRQ(ierr);
+		//ierr = get_errors(user->tfx, user->tlabels, &user->tseq, user, &lError, &wError); CHKERRQ(ierr);
+
+		// Sum up the errors (both word wise and letter wise)
+		MPI_Allreduce(MPI_IN_PLACE, &lError, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD);
+		MPI_Allreduce(MPI_IN_PLACE, &wError, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD);
+
+		if (user->rank == 0)
+			PetscPrintf(PETSC_COMM_SELF, "%f %f\n",
+				lError*100.0 / user->tm, wError*100.0 / user->tseq.wGlobalCount);
 		PetscFunctionReturn(0);		
 	}
 
