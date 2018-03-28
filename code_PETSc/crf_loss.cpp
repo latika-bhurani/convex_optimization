@@ -218,6 +218,7 @@ namespace crf_loss{
 		reg = reg_node + reg_edge;
 		*f = *f + reg * user->lambda / 2.0;
 		
+		ierr = VecSet(user->g_edge, 0.0); CHKERRQ(ierr);
 		ierr = VecScatterBegin(user->scatter, user->g_edgeloc, user->g_edge, ADD_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
 		ierr = VecScatterEnd(user->scatter, user->g_edgeloc, user->g_edge, ADD_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
 
