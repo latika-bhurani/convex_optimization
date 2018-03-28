@@ -218,8 +218,8 @@ namespace crf_loss{
 		reg = reg_node + reg_edge;
 		*f = *f + reg * user->lambda / 2.0;
 		
-		ierr = VecScatterBegin(user->scatter, user->w_edgeloc, user->w_edge, ADD_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
-		ierr = VecScatterEnd(user->scatter, user->w_edgeloc, user->w_edge, ADD_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
+		ierr = VecScatterBegin(user->scatter, user->g_edgeloc, user->g_edge, ADD_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
+		ierr = VecScatterEnd(user->scatter, user->g_edgeloc, user->g_edge, ADD_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
 
 		// Now everyone can compute the gradient
 
@@ -227,14 +227,15 @@ namespace crf_loss{
 		ierr = MatMultTranspose(user->data, user->c_node, user->g_node); CHKERRQ(ierr);
 		user->matvec_timer.stop();
 
+		//ierr = VecAXPY(G, user->lambda, w)
+		ierr = VecAXPY(user->g_node, user->lambda, user->w_node); CHKERRQ(ierr);
+		ierr = VecAXPY(user->g_edge, user->lambda, user->w_edge); CHKERRQ(ierr);
+
 		user->matvec_timer.start();
 		ierr = MatMultTranspose(user->M1, user->g_node, user->w_temp); CHKERRQ(ierr);
 		ierr = MatMultTransposeAdd(user->M2, user->g_edge, user->w_temp, G); CHKERRQ(ierr);
 		user->matvec_timer.stop();
 
-		//ierr = VecAXPY(G, user->lambda, w)
-		ierr = VecAXPY(user->g_node, user->lambda, user->w_node); CHKERRQ(ierr);
-		ierr = VecAXPY(user->g_edge, user->lambda, user->w_edge); CHKERRQ(ierr);
 		user->objgrad_timer.stop();
 		
 		PetscFunctionReturn(0);
