@@ -178,10 +178,11 @@ namespace crf_loss{
 		AppCtx *user = (AppCtx *)ctx;
 		PetscErrorCode ierr;
 		PetscReal reg = 0.0;
-		PetscReal weight_mod = 0.0;
-		PetsReal edge_norm_square = 0.0;
+		PetscReal reg_node = 0.0;
+		PetscReal reg_edge = 0.0;
+		
 		PetscFunctionBegin;
-		Vec temp;
+		
 
 		/* 
 			Your Implementation here 
@@ -200,9 +201,9 @@ namespace crf_loss{
 		user->matvec_timer.stop();
 
 		// scatter w_edge
-		ierr = VecScatterCreateToAll(user->w_edge, &scatter, &user->w_edgeloc); CHKERRQ(ierr);
-		ierr = VecScatterBegin(scatter, user->w_edge, user->w_edgeloc, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
-		ierr = VecScatterEnd(scatter, user->w_edge, user->w_edgeloc, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
+		ierr = VecScatterCreateToAll(user->w_edge, &user->scatter, &user->w_edgeloc); CHKERRQ(ierr);
+		ierr = VecScatterBegin(user->scatter, user->w_edge, user->w_edgeloc, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
+		ierr = VecScatterEnd(user->scatter, user->w_edge, user->w_edgeloc, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
 
 		// Computes the function and gradient coefficients 
 		ierr = loss_coef(user->fx, user->labels, user->w_edgeloc, user->c_node, user->g_edgeloc, f, user, &user->seq);	CHKERRQ(ierr);
@@ -217,18 +218,18 @@ namespace crf_loss{
 		reg = reg_node + reg_edge;
 		*f = *f + reg * user->lambda / 2.0;
 		
-		ierr = VecScatterBegin(scatter, user->w_edgeloc, user->w_edge, ADD_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
-		ierr = VecScatterEnd(scatter, user->w_edgeloc, user->w_edge, ADD_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
+		ierr = VecScatterBegin(user->scatter, user->w_edgeloc, user->w_edge, ADD_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
+		ierr = VecScatterEnd(user->scatter, user->w_edgeloc, user->w_edge, ADD_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
 
 		// Now everyone can compute the gradient
 
 		user->matvec_timer.start();
-		ierr = MatMultTranspose(user->data, user->c_node, &user->g_node); CHKERRQ(ierr);
+		ierr = MatMultTranspose(user->data, user->c_node, user->g_node); CHKERRQ(ierr);
 		user->matvec_timer.stop();
 
 		user->matvec_timer.start();
-		ierr = MatMultTranspose(user->M1, user->g_node, &temp); CHKERRQ(ierr);
-		ierr = MatMultTransposeAdd(user->M2, user->g_edge, temp, G); CHKERRQ(ierr);
+		ierr = MatMultTranspose(user->M1, user->g_node, user->w_temp); CHKERRQ(ierr);
+		ierr = MatMultTransposeAdd(user->M2, user->g_edge, user->w_temp, G); CHKERRQ(ierr);
 		user->matvec_timer.stop();
 
 		//ierr = VecAXPY(G, user->lambda, w)
@@ -332,7 +333,7 @@ namespace crf_loss{
 	// 	 None. Display the letter-wise and word-wise error rates 
 	PetscErrorCode Evaluate(Vec w, AppCtx* user) {
 		PetscErrorCode    ierr;
-
+		PetscInt lError, wError;
 		PetscFunctionBegin;
 		
 		/* 
