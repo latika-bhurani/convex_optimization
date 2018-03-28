@@ -346,12 +346,19 @@ namespace crf_loss{
 		// Compute the model output discriminative values on training data
 		ierr = MatMult(user->data, user->w_node, user->fx); CHKERRQ(ierr);
 
+		ierr = VecScatterCreateToAll(user->w_edge, &user->scatter, &user->w_edgeloc); CHKERRQ(ierr);
+		ierr = VecScatterBegin(user->scatter, user->w_edge, user->w_edgeloc, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
+		ierr = VecScatterEnd(user->scatter, user->w_edge, user->w_edgeloc, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
+
 		// Get the error of word and letter for the local sub-dataset of training data
-		ierr = get_errors(user->fx, user->labels, user->w_edge, &user->seq, user, &lError, &wError); CHKERRQ(ierr);
+		ierr = get_errors(user->fx, user->labels, user->w_edgeloc, &user->seq, user, &lError, &wError); CHKERRQ(ierr);
 		
 		// Sum up the errors (both word wise and letter wise)
 		MPI_Allreduce(MPI_IN_PLACE, &lError, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD);
 		MPI_Allreduce(MPI_IN_PLACE, &wError, 1, MPIU_INT, MPI_SUM, PETSC_COMM_WORLD);
+
+		ierr = VecScatterBegin(user->scatter, user->w_edgeloc, user->w_edge, ADD_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
+		ierr = VecScatterEnd(user->scatter, user->w_edgeloc, user->w_edge, ADD_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
 
 		if (user->rank == 0)
 			PetscPrintf(PETSC_COMM_SELF, "%f %f ",
