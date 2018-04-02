@@ -39,19 +39,16 @@ params = np.zeros(129 * 26 + 26 **2)
 X_train = X
 y_train = y
 X_test, y_test = gd.read_data("test_sgd.txt")
-X_test = X_test[0:100]
-y_test = y_test[0:100]
-
 
 start = time.time()
 print("Gradient calculation error on first hundred examples:")
-print(check_grad(fg.func_to_minimize, fg.grad_func, params, X_train[:100], y_train[:100], X_test, y_test, 0.0001, False))
-print("Finished in " + str(time.time() - start) + " seconds")
+#print(check_grad(fg.func_to_minimize, fg.grad_func, params, X_train[:100], y_train[:100], X_test, y_test, 0.001, False))
+#print("Finished in " + str(time.time() - start) + " seconds")
 
 print()
 print("Running optimization")
 print("train_word_accuracy, train_letter_accuracy, test_word_accuracy, test_letter_accuracy")
 
-fg.optimize(params, X_train, y_train, X_test, y_test, 0.0001)
+fg.optimize(params, X_train, y_train, 0.001)
 
 

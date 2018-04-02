@@ -15,44 +15,46 @@ import decode as dc
 iteration = 0
 
 
+def print_in_iteration(params):
+    global iteration
+    #this function gets called by bfgs, so we need to track accuracy at every  iteration
+    
+    iteration += 1
+    
 
-def func_to_minimize(params, X_train, y_train, X_test, y_test, l, do_printing):
+def func_to_minimize(params, X_train, y_train, l):
     num_examples = len(X_train)
     reg = 1/2 * np.sum(params ** 2)
     avg_prob = gc.log_p_y_given_x_avg(params, X_train, y_train, num_examples)
-
-    
-    if(do_printing):
-        global iteration
-        #this function gets called by bfgs, so we need to track accuracy at every  iteration
-        w = gc.w_matrix(params)
-        t = gc.t_matrix(params)
-        predictions = predict(X_train, w, t)
-        acc = accuracy(y_train, predictions)
-        print(str(iteration) + ": ", end = '')
-        print("%.3f, " %acc[0], end = '')
-        print("%.3f, " %acc[1], end = '')
-        
-        predictions = predict(X_test, w, t)
-        acc = accuracy(y_test, predictions)
-        print("%.3f, " %acc[0], end = '')
-        print("%.3f " %acc[1])
-        iteration += 1
-        
-    
     return -avg_prob + l * reg
 
-def grad_func(params, X_train, y_train, X_test, y_test, l, do_printing):
+def func_to_minimize_word(params, X_train, y_train, word_num, l):
+    w = gc.w_matrix(params)
+    t = gc.t_matrix(params)
+    reg = 1/2 * np.sum(params ** 2)
+    w_x = np.inner(X_train[word_num], w)
+    prob = gc.log_p_y_given_x(w_x, y_train, t, word_num)
+    
+    return -prob + l * reg
+
+def grad_func(params, X_train, y_train, l):
     num_examples = len(X_train)
     grad_avg =  gc.gradient_avg(params, X_train, y_train, num_examples)
     grad_reg = params
     return - grad_avg + l * grad_reg
+
+def grad_func_word(params, X_train, y_train, word_num, l):
+    w = gc.w_matrix(params)
+    t = gc.t_matrix(params)
+    grad_avg =  gc.gradient_word(X_train, y_train, w, t, word_num)
+    grad_reg = params
+    return - grad_avg + l * grad_reg
+
     
 
 def optimize(params, X_train, y_train, X_test, y_test, l):
-
     start = time()
-    fmin_bfgs(func_to_minimize, params, grad_func, (X_train, y_train, X_test, y_test, l, True))
+    fmin_bfgs(func_to_minimize, params, grad_func, (X_train, y_train, l), gtol = 0.01)
     print("Total time: ", end = '')
     print(time() - start)
     
@@ -82,3 +84,16 @@ def predict(X, w, t):
         M = dc.decode(x, w, t)
         y_pred.append(dc.get_solution_from_M(M, x, w, t))
     return y_pred
+
+def print_accuracies(params, X_train, y_train, X_test, y_test):
+    w = gc.w_matrix(params)
+    t = gc.t_matrix(params)
+    predictions = predict(X_train, w, t)
+    train_accuracy = accuracy(predictions, y_train)
+    print("%.3f, " %train_accuracy[0], end = '')
+    print("%.3f, " %train_accuracy[1], end = '')
+    
+    predictions = predict(X_test, w, t)
+    test_accuracy = accuracy(predictions, y_test)
+    print("%.3f, " %test_accuracy[0], end = '')
+    print("%.3f " %test_accuracy[1])
