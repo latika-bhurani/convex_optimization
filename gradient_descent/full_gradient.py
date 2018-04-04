@@ -33,7 +33,7 @@ def func_to_minimize_word(params, X_train, y_train, word_num, l):
     t = gc.t_matrix(params)
     reg = 1/2 * np.sum(params ** 2)
     w_x = np.inner(X_train[word_num], w)
-    prob = gc.log_p_y_given_x(w_x, y_train, t, word_num)
+    prob = gc.log_p_y_given_x(w_x, y_train[word_num], t, word_num)
     
     return -prob + l * reg
 
@@ -52,11 +52,12 @@ def grad_func_word(params, X_train, y_train, word_num, l):
 
     
 
-def optimize(params, X_train, y_train, X_test, y_test, l):
+def optimize(params, call_func, l):
     start = time()
-    fmin_bfgs(func_to_minimize, params, grad_func, (X_train, y_train, l), gtol = 0.01)
+    opt_params = fmin_bfgs(func_to_minimize, params, grad_func, (call_func.X_train, call_func.y_train, l), maxiter = 50, gtol = 0.000001, callback = call_func.call_back)
     print("Total time: ", end = '')
     print(time() - start)
+    return opt_params
     
 def accuracy(y_pred, y_act):
     word_count = 0

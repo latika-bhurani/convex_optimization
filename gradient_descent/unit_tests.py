@@ -9,6 +9,7 @@ import numpy as np
 import gradient_calculation as gc
 import full_gradient as fg
 from scipy.optimize import check_grad
+import callback_function as cf
 import time
 
 #should just print a bunch of trues
@@ -40,15 +41,24 @@ X_train = X
 y_train = y
 X_test, y_test = gd.read_data("test_sgd.txt")
 
+
+
+
+'''
 start = time.time()
 print("Gradient calculation error on first hundred examples:")
-#print(check_grad(fg.func_to_minimize, fg.grad_func, params, X_train[:100], y_train[:100], X_test, y_test, 0.001, False))
-#print("Finished in " + str(time.time() - start) + " seconds")
+print(check_grad(fg.func_to_minimize, fg.grad_func, params, X_train[:100], y_train[:100],  0.001))
+print("Finished in " + str(time.time() - start) + " seconds")
+'''
+#print("Gradient of first word")
+#print(check_grad(fg.func_to_minimize_word, fg.grad_func_word, params, X_train, y_train, 0, 0.01))
+
 
 print()
 print("Running optimization")
-print("train_word_accuracy, train_letter_accuracy, test_word_accuracy, test_letter_accuracy")
+call_func = cf.callback_function(X_train, y_train, X_test, y_test, "bfgs_1e-6.txt")
+opt_params = fg.optimize(params, call_func, 0.000001)
+fg.print_accuracies(opt_params, X_train, y_train, X_test, y_test)
 
-fg.optimize(params, X_train, y_train, 0.001)
 
 

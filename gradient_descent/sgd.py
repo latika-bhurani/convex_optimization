@@ -10,69 +10,48 @@ import numpy as np
 import full_gradient as fg
 import os
 import random as rd
+import callback_function as cf
 
-iteration = 0
-def print_params(params):
-    global iteration
-    with open("sgd.txt", "a") as text_file:
-        text_file.write("%d " %iteration)
-        for p in params:
-            text_file.write("%f " %p)
-        text_file.write("\n")
-        text_file.close()
-    iteration += 1
     
-def sgd_crf(X_train, y_train, params, l, l_rate, n_epoch, gtol):
+def sgd_crf(call_func, params, l, l_rate, n_epoch, gtol):
     epoch = 0
-    g_avg = np.ones_like(params)
-    old_g_avg = np.ones_like(params)
+    iteration = 0
     while(True):
         #calculate gradient with respect to a randomly selected word
-        gradient = fg.grad_func_word(params, X_train, y_train, rd.randint(0, len(X_train) - 1), l)
+        gradient = fg.grad_func_word(params, call_func.X_train, call_func.y_train, rd.randint(0, len(X_train) - 1), l)
+     
         
-        #revise average gradient
-        g_avg = 0.1 * gradient + 0.9 * g_avg
         params = params - l_rate * gradient
-            
-
-        if(epoch > n_epoch):
-            print("Epoch limit")
-            break
-        if(epoch % len(X_train) == 0):
+        
+        #stopping criteria.  Here, if the epoch limit is reached or the gradient
+        # is less than the gradient tolerance then stop
+        iteration += 1
+        
+        if(iteration % len(X_train) == 0 and iteration > 0):
             epoch += 1
-            print_params(params)
-            print("Current : ", end = '')
-            print(np.sum(g_avg ** 2))
-            print("Old: ", end = '')
-            print(np.sum(old_g_avg ** 2))
-            if(abs(np.sum(g_avg **2) -  np.sum(old_g_avg **2)) < 0.00001):
-                print("small difference")
+            
+            call_func.call_back(params)
+            if(epoch >= n_epoch):
+                print("Epoch limit")
                 break
-            else:
-                old_g_avg = g_avg
-            print_params(params)
-
+            '''
+            #average gradient size
+            if(np.sum(call_func.avg_grad ** 2) < gtol):
+                print("Small average gradient")
+                break
+            '''
+                
     return params
  
-def get_sgd_accuracy(X_train, y_train, X_test, y_test):
-    file = open("sgd.txt" , 'r')
-    print("iter: test_word, test_letter, train_word, train_letter, train_word")
-    for line in file:
-        split = line.split()
-        print(split[0] + ": ", end = '')
-        params = np.array(split[1:]).astype(np.float)
-        fg.print_accuracies(params, X_train, y_train, X_test, y_test)
-    file.close()
 
-
-
-if(os.path.isfile("sgd.txt")):
-    os.remove("sgd.txt")
-    
 X_train, y_train = gd.read_data("train_sgd.txt")
 X_test, y_test = gd.read_data("test_sgd.txt")
 params = np.zeros(129*26 + 26 **2)
+cf = cf.callback_function(X_train, y_train,  X_test, y_test, "sgd_1e-2.txt")
+cf.delete_file()
+print("computing optimal params")
+#args are callbackfunction,      lambda,   learning rate, max iters, and gtol
+opt_params = sgd_crf(cf, params, 0.01, 0.005, 50, 0.0001)
 
-opt_params = sgd_crf(X_train, y_train, params, 0.01, 0.0007, 100000, 0.01)
-
-get_sgd_accuracy(X_train, y_train, X_test, y_test)
+print("Final accuracy:")
+fg.print_accuracies(opt_params, X_train, y_train, X_test, y_test)

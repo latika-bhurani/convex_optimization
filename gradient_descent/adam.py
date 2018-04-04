@@ -1,6 +1,8 @@
 import numpy as np
 import full_gradient as fg
 import random as rd
+import math
+import get_data as gd
 
 def adam_crf(X_train, y_train, n_epoch, learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-8):
 
@@ -18,7 +20,8 @@ def adam_crf(X_train, y_train, n_epoch, learning_rate=0.001, beta_1=0.9, beta_2=
         v_t = beta_2 * v_0 + (1-beta_2) * grad.transpose() * grad
         m_t_hat = m_t / (1-beta_1**epoch)
         v_t_hat = v_t / (1-beta_2**epoch)
-
+        print("epoch %d" %epoch)
+        print(type(v_t_hat))
         theta_0 = theta_0 - (learning_rate * m_t_hat) / (math.sqrt(v_t_hat) + epsilon)
 
         if abs(theta_0 - theta_0_prev) <= epsilon:
@@ -46,3 +49,14 @@ def calculate_adam_accuracy(X_train, y_train, X_test, y_test):
         fg.print_accuracies(params, X_train, y_train, X_test, y_test)
     file.close()
 
+X_train, y_train = gd.read_data("train_sgd.txt")
+X_test, y_test = gd.read_data("test_sgd.txt")
+params = np.zeros(129*26 + 26 **2)
+#cf = cf.callback_function(X_train, y_train,  X_test, y_test, "sgd_1e-6.txt")
+#cf.delete_file()
+print("computing optimal params")
+#args are callbackfunction,      lambda,   learning rate, max iters, and gtol
+opt_params = adam_crf(X_train, y_train, 50)
+
+print("Final accuracy:")
+fg.print_accuracies(opt_params, X_train, y_train, X_test, y_test)
