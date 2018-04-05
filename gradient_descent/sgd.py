@@ -8,7 +8,6 @@ import get_data as gd
 import gradient_calculation as gc
 import numpy as np
 import full_gradient as fg
-import os
 import random as rd
 import callback_function as cf
 
@@ -34,12 +33,6 @@ def sgd_crf(call_func, params, l, l_rate, n_epoch, gtol):
             if(epoch >= n_epoch):
                 print("Epoch limit")
                 break
-            '''
-            #average gradient size
-            if(np.sum(call_func.avg_grad ** 2) < gtol):
-                print("Small average gradient")
-                break
-            '''
                 
     return params
  

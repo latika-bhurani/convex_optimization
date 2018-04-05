@@ -28,12 +28,13 @@ class callback_function:
         
     
     def call_back(self, params):
-        self.print_gradient_average(params)
+        self.iteration += 1
         self.print_params(params)
+        self.print_gradient_average(params)
+        
     
     def print_gradient_average(self, params):
         print("Average gradient %d:" %self.iteration)
-        self.iteration += 1
         self.avg_grad = gc.gradient_avg(params, self.X_train, self.y_train, len(self.X_train))
         print(np.sum(self.avg_grad ** 2))
     
