@@ -1,26 +1,11 @@
 
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Mar  3 13:02:04 2018
-
-@author: Erik
-"""
 
 import gradient_calculation as gc
 from scipy.optimize import fmin_bfgs
 from time import time
 import numpy as np
 import decode as dc
-
-iteration = 0
-
-
-def print_in_iteration(params):
-    global iteration
-    #this function gets called by bfgs, so we need to track accuracy at every  iteration
-    
-    iteration += 1
-    
+ 
 
 def func_to_minimize(params, X_train, y_train, l):
     num_examples = len(X_train)
@@ -52,9 +37,13 @@ def grad_func_word(params, X_train, y_train, word_num, l):
 
     
 
-def optimize(params, call_func, l):
+def optimize(params, call_func):
     start = time()
-    opt_params = fmin_bfgs(func_to_minimize, params, grad_func, (call_func.X_train, call_func.y_train, l), maxiter = 50, gtol = 0.000001, callback = call_func.call_back)
+    opt_params = fmin_bfgs(func_to_minimize, params, grad_func, 
+                           (call_func.X_train, call_func.y_train, call_func.lmda), 
+                           maxiter = 100, 
+                           gtol = 1e-30, 
+                           callback = call_func.call_back)
     print("Total time: ", end = '')
     print(time() - start)
     return opt_params

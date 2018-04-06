@@ -18,9 +18,9 @@ def print_word_error(infile, outfile, X_test, y_test, l):
     for line in file:
         lines.append(line)
     file.close()
-    for line in lines:
+    for i, line in enumerate(lines):
         split = line.split()
-        print(split[0] + ": ", end = '')
+        print(i + ": ", end = '')
         params = np.array(split[1:]).astype(np.float)
         w = gc.w_matrix(params)
         t = gc.t_matrix(params)
@@ -44,14 +44,7 @@ print_word_error("bfgs_1e-4.txt", "bfgs_1e-4_word_error.txt", X_test, y_test, 0.
 print("time for first iteration %3f" %(time.time() - start))
 
 
-
-
-print_word_error("bfgs_1e-6.txt", "bfgs_1e-6_word_error.txt", X_test, y_test, 0.000001)
-
-print_word_error("sgd_1e-2.txt", "sgd_1e-2_word_error.txt", X_test, y_test, 0.01)
-
 print_word_error("sgd_1e-4.txt", "sgd_1e-4_word_error.txt", X_test, y_test, 0.0001)
 
-print_word_error("sgd_1e-6.txt", "sgd_1e-6_word_error.txt", X_test, y_test, 0.000001)
 
 '''todo: same stuff with adam when it's done'''

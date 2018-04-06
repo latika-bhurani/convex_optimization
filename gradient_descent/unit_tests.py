@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Mar 30 10:46:20 2018
 
-@author: Erik
-"""
 import get_data as gd
 import numpy as np
 import gradient_calculation as gc
@@ -15,6 +10,7 @@ import time
 #should just print a bunch of trues
 
 X, y = gd.read_data("train_sgd.txt")
+'''
 file = open('../data/train_sgd.txt' , 'r') 
 
 print("Testing get_data:")
@@ -35,6 +31,7 @@ print()
 
 
 print("Testing gradient_calculation:")
+'''
 params = np.zeros(129 * 26 + 26 **2)
 
 X_train = X
@@ -53,12 +50,6 @@ print("Finished in " + str(time.time() - start) + " seconds")
 #print("Gradient of first word")
 #print(check_grad(fg.func_to_minimize_word, fg.grad_func_word, params, X_train, y_train, 0, 0.01))
 
-
-print()
-print("Running optimization")
-call_func = cf.callback_function(X_train, y_train, X_test, y_test, "bfgs_1e-6.txt")
-opt_params = fg.optimize(params, call_func, 0.000001)
-fg.print_accuracies(opt_params, X_train, y_train, X_test, y_test)
 
 
 
