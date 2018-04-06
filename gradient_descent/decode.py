@@ -20,18 +20,14 @@ def decode(X, w, t):
     
     #go row wise through M matrix, starting at line 2 since first line is populated
     for row in range(1, len(X)):
+        #Need to set this letter equal to it's own inner product + max previous + transition
         
-        #go column wise, populating the best sum of the previous + T[previous letter][
+        
         for cur_letter in range(26):
-            #initialize with giant negative number
-            best = -99999999999999
+            M[row][cur_letter] = np.max(M[row-1] + t.transpose()[cur_letter]) + np.inner(X[row], w[cur_letter])
             
-            #iterate over all values of the previous letter, fixing the current letter
-            for prev_letter in range(26):
-                temp_product = M[row-1][prev_letter] + np.inner(X[row], w[cur_letter]) + t[prev_letter][cur_letter]
-                if(temp_product > best):
-                    best = temp_product
-            M[row][cur_letter] = best
+            
+            
     return M
 
 

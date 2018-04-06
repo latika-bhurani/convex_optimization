@@ -83,6 +83,7 @@ def predict(X, w, t):
     y_pred = []
     for i, x in enumerate(X):
         M = dc.decode(x, w, t)
+        
         y_pred.append(dc.get_solution_from_M(M, x, w, t))
     return y_pred
 
