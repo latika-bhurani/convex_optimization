@@ -6,7 +6,13 @@ import full_gradient as fg
 import random as rd
 import callback_function as cf
 
-    
+'''target function values:
+1e-2: 3.38
+1e-4: 2.12, 2.14 at 100 iterations
+1e-6: 1.61, 1.7 at 100 iterations
+'''
+
+
 def sgd_crf(call_func, params, l_rate, n_epoch = 100):
     epoch = 0
     iteration = 0
@@ -37,33 +43,27 @@ X_train, y_train = gd.read_data("train_sgd.txt")
 X_test, y_test = gd.read_data("test_sgd.txt")
 params = np.zeros(129*26 + 26 **2)
 
-
-cf = cf.callback_function(X_train, y_train,  X_test, y_test, "sgd_1e-2.txt", 0.01)
-cf.delete_file()
+'''
+cf_2 = cf.callback_function(X_train, y_train,  X_test, y_test, "sgd_1e-2.txt", 0.01)
+cf_2.delete_file()
 print("computing optimal params")
 #args are callbackfunction,      learning rate
-opt_params = sgd_crf(cf, params, 0.0001)
+opt_params = sgd_crf(cf_2, params, 0.0001)
 print("Final accuracy:")
 fg.print_accuracies(opt_params, X_train, y_train, X_test, y_test)
+'''
 
-
-
-cf = cf.callback_function(X_train, y_train,  X_test, y_test, "sgd_1e-4.txt", 0.0001)
-cf.delete_file()
-print("computing optimal params")
-#args are callbackfunction,      learning rate
-opt_params = sgd_crf(cf, params, 0.001)
-print("Final accuracy:")
+'''
+cf_4 = cf.callback_function(X_train, y_train,  X_test, y_test, "sgd_1e-4.txt", 0.0001)
+cf_4.delete_file()
+opt_params = sgd_crf(cf_4, params, 0.001)
 fg.print_accuracies(opt_params, X_train, y_train, X_test, y_test)
+'''
 
 
-
-cf = cf.callback_function(X_train, y_train,  X_test, y_test, "sgd_1e-6.txt", 0.000001)
-cf.delete_file()
-print("computing optimal params")
-#args are callbackfunction,      learning rate
-opt_params = sgd_crf(cf, params, 0.001)
-print("Final accuracy:")
+cf_6 = cf.callback_function(X_train, y_train,  X_test, y_test, "sgd_1e-6.txt", 0.000001)
+cf_6.delete_file()
+opt_params = sgd_crf(cf_6, params, 0.01)
 fg.print_accuracies(opt_params, X_train, y_train, X_test, y_test)
 
 

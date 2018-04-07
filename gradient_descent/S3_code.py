@@ -20,7 +20,7 @@ def print_word_error(infile, outfile, X_test, y_test, l):
     file.close()
     for i, line in enumerate(lines):
         split = line.split()
-        print(i + ": ", end = '')
+        print(str(i) + ": ", end = '')
         params = np.array(split[1:]).astype(np.float)
         w = gc.w_matrix(params)
         t = gc.t_matrix(params)

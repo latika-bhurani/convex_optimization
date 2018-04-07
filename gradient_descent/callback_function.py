@@ -24,18 +24,23 @@ class callback_function:
         
     
     def call_back(self, params):
-        if(self.iteration % 10 == 0):
-            self.print_gradient_average(params)
+        #print information about the iteration, function value and gradient norm
+        print("Iteration %d:" %self.iteration)
+        self.funct_value(params)
+        #self.print_gradient_average(params)
+        print()
+        
         self.iteration += 1
         self.print_params(params)
+        
 
     
     def funct_value(self, params):
-        
-        print(fg.func_to_minimize(params, self.X_train, self.y_train))
+        print("Function value: ", end = '')
+        print(fg.func_to_minimize(params, self.X_train, self.y_train, self.lmda))
     
     def print_gradient_average(self, params):
-        print("Average gradient %d:" %self.iteration)
+        print("Average gradient: ", end = '')
         self.avg_grad = fg.grad_func(params, self.X_train, self.y_train, self.lmda)
         print(np.sum(self.avg_grad ** 2))
     
