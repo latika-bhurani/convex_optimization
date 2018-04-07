@@ -39,10 +39,11 @@ def print_word_error(infile, outfile, X_test, y_test, l):
     
 X_test, y_test = gd.read_data("test_sgd.txt")
 
+'''
 start = time.time()
 print_word_error("bfgs_1e-4.txt", "bfgs_1e-4_word_error.txt", X_test, y_test, 0.0001)
 print("time for first iteration %3f" %(time.time() - start))
-
+'''
 
 print_word_error("sgd_1e-4.txt", "sgd_1e-4_word_error.txt", X_test, y_test, 0.0001)
 

@@ -53,17 +53,17 @@ print("Final accuracy:")
 fg.print_accuracies(opt_params, X_train, y_train, X_test, y_test)
 '''
 
-'''
+
 cf_4 = cf.callback_function(X_train, y_train,  X_test, y_test, "sgd_1e-4.txt", 0.0001)
 cf_4.delete_file()
-opt_params = sgd_crf(cf_4, params, 0.001)
+opt_params = sgd_crf(cf_4, params, 0.005)
 fg.print_accuracies(opt_params, X_train, y_train, X_test, y_test)
+
+
 '''
-
-
 cf_6 = cf.callback_function(X_train, y_train,  X_test, y_test, "sgd_1e-6.txt", 0.000001)
 cf_6.delete_file()
 opt_params = sgd_crf(cf_6, params, 0.01)
 fg.print_accuracies(opt_params, X_train, y_train, X_test, y_test)
-
+'''
 

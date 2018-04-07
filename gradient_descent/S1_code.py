@@ -43,9 +43,9 @@ print_function_values("bfgs_1e-4.txt", "bfgs_1e-4_f_vals.txt", X_train, y_train,
 print_function_values("bfgs_1e-6.txt", "bfgs_1e-6_f_vals.txt", X_train, y_train, 0.000001)
 
 print_function_values("sgd_1e-2.txt", "sgd_1e-2_f_vals.txt", X_train, y_train, 0.01)
-
-print_function_values("sgd_1e-4.txt", "sgd_1e-4_f_vals.txt", X_train, y_train, 0.0001)
 '''
-print_function_values("sgd_1e-6.txt", "sgd_1e-6_f_vals.txt", X_train, y_train, 0.000001)
+print_function_values("sgd_1e-4.txt", "sgd_1e-4_f_vals.txt", X_train, y_train, 0.0001)
+
+#print_function_values("sgd_1e-6.txt", "sgd_1e-6_f_vals.txt", X_train, y_train, 0.000001)
 
 '''todo: same stuff with adam when it's done'''
