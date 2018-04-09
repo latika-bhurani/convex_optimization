@@ -1,6 +1,5 @@
 import numpy as np
 import random
-from adam import Adam
 import callback_function as cf
 import get_data as gd
 import full_gradient as fg
@@ -22,7 +21,6 @@ class GibbsSample:
 
     def __init__(self):
         self.theta = np.ones(129 * 26 + 26 ** 2)
-        self.adam = Adam(5000)
         self.learning_rate = 0.01
         self.beta_1 = 0.9
         self.beta_2 = 0.999
