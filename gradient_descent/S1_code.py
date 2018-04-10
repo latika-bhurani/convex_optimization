@@ -32,7 +32,8 @@ def print_function_values(infile, outfile, X_train, y_train, l):
 X_train, y_train = gd.read_data("train_sgd.txt")
 
 #time just this one to get a sense of how long the whole set will take
-'''
+
+
 start = time.time()
 print_function_values("bfgs_1e-2.txt", "bfgs_1e-2_f_vals.txt", X_train, y_train, 0.01)
 print("time for first iteration %3f" %(time.time() - start))
@@ -43,9 +44,19 @@ print_function_values("bfgs_1e-4.txt", "bfgs_1e-4_f_vals.txt", X_train, y_train,
 print_function_values("bfgs_1e-6.txt", "bfgs_1e-6_f_vals.txt", X_train, y_train, 0.000001)
 
 print_function_values("sgd_1e-2.txt", "sgd_1e-2_f_vals.txt", X_train, y_train, 0.01)
-'''
+
 print_function_values("sgd_1e-4.txt", "sgd_1e-4_f_vals.txt", X_train, y_train, 0.0001)
 
-#print_function_values("sgd_1e-6.txt", "sgd_1e-6_f_vals.txt", X_train, y_train, 0.000001)
+print_function_values("sgd_1e-6.txt", "sgd_1e-6_f_vals.txt", X_train, y_train, 0.000001)
 
-'''todo: same stuff with adam when it's done'''
+print_function_values("adam_1e-2.txt", "adam_1e-2_f_vals.txt", X_train, y_train, 0.01)
+print("Done with e-2")
+
+print_function_values("adam_1e-4.txt", "adam_1e-4_f_vals.txt", X_train, y_train, 0.0001)
+print("Done with e-4")
+
+print_function_values("adam_1e-6.txt", "adam_1e-6_f_vals.txt", X_train, y_train, 0.000001)
+print("Done with e-6")
+
+
+

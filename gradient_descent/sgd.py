@@ -7,7 +7,7 @@ import random as rd
 import callback_function as cf
 
 '''target function values:
-1e-2: 3.38
+1e-2: 6.38
 1e-4: 2.12, 2.14 at 100 iterations
 1e-6: 1.61, 1.7 at 100 iterations
 '''
