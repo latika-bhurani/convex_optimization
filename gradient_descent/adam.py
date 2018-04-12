@@ -7,7 +7,7 @@ import callback_function as cf
 class Adam:
 
     # params with default values
-    def __init__(self, iterations, lambda_param=0.01, learning_rate=0.0001, beta_1=0.9, beta_2=0.999, epsilon=1e-8):
+    def __init__(self, iterations, lambda_param=0.01, learning_rate=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-8):
 
         self.lambda_param = lambda_param
         self.learning_rate = learning_rate
@@ -22,6 +22,7 @@ class Adam:
         epoch = 0
         m_t = 0         # first order moment
         v_t = 0         # second order moment
+        iteration=0     #######
 
         # init params
         theta = np.ones(129 * 26 + 26 ** 2)
@@ -35,9 +36,7 @@ class Adam:
             theta_prev = theta
 
             #calculate gradient
-            grad = fg.grad_func_word(theta, call_func.X_train, call_func.y_train, 
-                                     rd.randint(0, len(X_train) - 1), 
-                                     self.lambda_param)
+            grad = fg.grad_func_word(theta, call_func.X_train, call_func.y_train, rd.randint(0, len(X_train) - 1), self.lambda_param)
 
             # biased moments
             m_t = self.beta_1 * m_t + (1 - self.beta_1) * grad
@@ -50,14 +49,19 @@ class Adam:
             # update params
             theta = theta_prev - (self.learning_rate * m_t_hat) / (np.sqrt(v_t_hat) + self.epsilon)
 
-            #print(theta)
-            # termination condition
-            if(epoch % len(X_train) == 0 and epoch > 0):
-                call_func.call_back(theta)
-            
-            if sum(abs(theta - theta_prev)) <= self.epsilon or epoch == self.iterations:
-                break
 
+            if(epoch % len(call_func.X_train) == 0):
+                iteration += 1
+
+
+                call_func.call_back(theta)
+                print(theta)
+                # termination condition
+                if sum(abs(theta - theta_prev)) <= self.epsilon or iteration == self.iterations:####
+                    break
+
+        
+        
         return theta
 
     def calculate_adam_accuracy(X_train, y_train, X_test, y_test):
@@ -73,13 +77,12 @@ class Adam:
 X_train, y_train = gd.read_data("train_sgd.txt")
 X_test, y_test = gd.read_data("test_sgd.txt")
 params = np.zeros(129*26 + 26 **2)
-
-cf = cf.callback_function(X_train, y_train,  X_test, y_test, "adam_1e-2.txt", 0.01)
+cf = cf.callback_function(X_train, y_train,  X_test, y_test, "adam1e2.txt",0.01)
 cf.delete_file()
 print("computing optimal params")
 #args are callbackfunction,      lambda,   learning rate, max iters, and gtol
 
-adam = Adam(170000)
+adam = Adam(100)
 opt_params = adam.update(cf)
 
 print("Final accuracy:")
